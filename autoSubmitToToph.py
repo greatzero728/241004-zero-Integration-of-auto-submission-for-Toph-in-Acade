@@ -1,11 +1,12 @@
 import os
-import time  # Import the time module
+import time
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as EC
 
 # Load environment variables from .env file
@@ -23,7 +24,6 @@ def login(tophHandle, tophPassword):
     chrome_options = Options()
     chrome_options.add_argument("--incognito")
     
-    # Initialize the Chrome WebDriver
     driver = webdriver.Chrome(options=chrome_options)
     driver.maximize_window()
 
@@ -31,7 +31,6 @@ def login(tophHandle, tophPassword):
         driver.get("https://toph.co/login")
         print("Navigated to Toph login page.")
 
-        # Wait for the username and password fields to load
         username_input = WebDriverWait(driver, WAIT_TIME).until(
             EC.presence_of_element_located((By.NAME, 'handle'))
         )
@@ -48,31 +47,62 @@ def login(tophHandle, tophPassword):
 def submit(driver, problem_id, code):
     """Submit the given code to the specified problem."""
     try:
-        # Construct the problem URL and open it
         submission_url = COMMON_URL_PREFIX + problem_id
         driver.get(submission_url)
         print(f"Opened problem URL: {submission_url}")
 
-        # Delay to check the opened problem page
-        time.sleep(1000)  # Wait for 1000 seconds (you can adjust this duration)
+        # Wait for the "Open Editor" button to become clickable and click it
+        open_editor_button = WebDriverWait(driver, WAIT_TIME).until(
+            EC.element_to_be_clickable((By.XPATH, "//span[text()='Open Editor']"))
+        )
+        open_editor_button.click()
+        print("Clicked on 'Open Editor' button.")
 
-        # Display the code that would be submitted (submission logic can be added later)
-        print("Code to be submitted:")
-        print(code)
+        # Add a delay to allow the editor panel to fully load
+        time.sleep(3)  # Add a brief delay to ensure the UI is fully loaded
 
-        # You can extend this to automate selecting language and submitting the code.
+        # Scroll to the dropdown to make sure it's in view and not blocked
+        language_dropdown_trigger = WebDriverWait(driver, WAIT_TIME).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, 'aside[data-codepanel-problemslug="add-them-up"] div.dropdown.-select'))
+        )
+        driver.execute_script("arguments[0].scrollIntoView(true);", language_dropdown_trigger)
+        print("Scrolled to language dropdown.")
+
+        # Use JavaScript to directly open the dropdown and select the C++23 language
+        driver.execute_script("""
+            let dropdown = document.querySelector('aside[data-codepanel-problemslug="add-them-up"] div.dropdown.-select');
+            dropdown.click();  // Open the dropdown
+
+            let options = dropdown.querySelectorAll('a');
+            options.forEach(function(option) {
+                if (option.textContent.includes('C++23 GCC 13.2')) {
+                    option.click();  // Select C++23 GCC 13.2
+                }
+            });
+        """)
+        print("Selected 'C++23 GCC 13.2' language via JavaScript.")
+
+        # Wait for the editor to be ready
+        editor = WebDriverWait(driver, WAIT_TIME).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'cm-content'))
+        )
+
+        # Clear the editor and paste the code
+        driver.execute_script("arguments[0].innerText = arguments[1];", editor, code)
+        print("Code has been pasted into the editor.")
+
+        # Add a delay of 1000 seconds to see the result clearly
+        time.sleep(1000)  # Delay in seconds
     
     except Exception as e:
         print(f"Error while trying to open the problem page: {e}")
 
 def main():
-    # Step 1: Login
     driver = login(TOPH_USERNAME, TOPH_PASSWORD)
 
     if driver:
         print("Logged in and browser is open. Ready for submissions.")
         
-        # Step 2: Call submit function with problem_id and code
         problem_id = "add-them-up"
         code = """#include <iostream>
 using namespace std;
