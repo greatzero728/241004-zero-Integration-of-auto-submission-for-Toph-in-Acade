@@ -129,7 +129,7 @@ def get_status(driver, submission_id):
 
         # Extract the submission status from the 6th <td>
         submission_status = result_row.find_element(By.XPATH, ".//td[6]").text
-        print(f"Submission status for {submission_id}: {submission_status}")
+        print(f"Submission status for {submission_id}: {submission_status}\n\n\n")
 
         return submission_status
 
@@ -159,7 +159,6 @@ int main() {
         # Fetch the submission status
         if submission_id:
             status = get_status(driver, submission_id)
-            print(f"Submission Status: {status}")
 
 if __name__ == "__main__":
     main()
