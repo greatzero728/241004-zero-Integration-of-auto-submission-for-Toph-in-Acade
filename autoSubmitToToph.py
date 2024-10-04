@@ -45,7 +45,7 @@ def login(tophHandle, tophPassword):
         print(f"Error during login: {e}")
 
 def submit(driver, problem_id, code):
-    """Submit the given code to the specified problem."""
+    """Submit the given code to the specified problem and return the submission ID."""
     try:
         submission_url = COMMON_URL_PREFIX + problem_id
         driver.get(submission_url)
@@ -59,9 +59,9 @@ def submit(driver, problem_id, code):
         print("Clicked on 'Open Editor' button.")
 
         # Add a delay to allow the editor panel to fully load
-        time.sleep(3)  # Add a brief delay to ensure the UI is fully loaded
+        time.sleep(3)
 
-        # Scroll to the dropdown to make sure it's in view and not blocked
+        # Scroll to the dropdown to make sure it's in view
         language_dropdown_trigger = WebDriverWait(driver, WAIT_TIME).until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, 'aside[data-codepanel-problemslug="add-them-up"] div.dropdown.-select'))
         )
@@ -91,11 +91,27 @@ def submit(driver, problem_id, code):
         driver.execute_script("arguments[0].innerText = arguments[1];", editor, code)
         print("Code has been pasted into the editor.")
 
-        # Add a delay of 1000 seconds to see the result clearly
-        time.sleep(1000)  # Delay in seconds
-    
+        # Click the "Submit" button
+        submit_button = WebDriverWait(driver, WAIT_TIME).until(
+            EC.element_to_be_clickable((By.XPATH, "//span[text()='Submit']"))
+        )
+        submit_button.click()
+        print("Clicked on 'Submit' button.")
+
+        # Wait for the submission result row to appear
+        result_row = WebDriverWait(driver, WAIT_TIME).until(
+            EC.presence_of_element_located((By.XPATH, "//tr[contains(@class, 'syncer')]"))
+        )
+
+        # Extract the submission ID from the first <td>
+        submission_id = result_row.find_element(By.XPATH, ".//td[1]").text
+        print(f"Submission ID: {submission_id}")
+
+        return int(submission_id)
+
     except Exception as e:
-        print(f"Error while trying to open the problem page: {e}")
+        print(f"Error while trying to submit the code: {e}")
+        return None
 
 def main():
     driver = login(TOPH_USERNAME, TOPH_PASSWORD)
@@ -113,7 +129,8 @@ int main() {
     cout << a + b << endl;
     return 0;
 }"""
-        submit(driver, problem_id, code)
+        submission_id = submit(driver, problem_id, code)
+        print(f"Returned Submission ID: {submission_id}")
 
 if __name__ == "__main__":
     main()
