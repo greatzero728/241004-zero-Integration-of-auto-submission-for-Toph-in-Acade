@@ -18,6 +18,7 @@ TOPH_PASSWORD = os.getenv('TOPH_PASSWORD')
 WAIT_TIME = int(os.getenv('WAIT_TIME'))
 
 COMMON_URL_PREFIX = "https://toph.co/p/"
+SUBMISSION_URL_PREFIX = "https://toph.co/s/"
 
 def login(tophHandle, tophPassword):
     """Login to Toph.co using provided credentials."""
@@ -113,6 +114,29 @@ def submit(driver, problem_id, code):
         print(f"Error while trying to submit the code: {e}")
         return None
 
+def get_status(driver, submission_id):
+    """Fetch the status of a submission using the submission ID."""
+    try:
+        # Open the submission URL
+        submission_url = SUBMISSION_URL_PREFIX + str(submission_id)
+        driver.get(submission_url)
+        print(f"Opened submission URL: {submission_url}")
+
+        # Wait for the submission result row to appear
+        result_row = WebDriverWait(driver, WAIT_TIME).until(
+            EC.presence_of_element_located((By.XPATH, f"//tr[@id='trSubmission{submission_id}']"))
+        )
+
+        # Extract the submission status from the 6th <td>
+        submission_status = result_row.find_element(By.XPATH, ".//td[6]").text
+        print(f"Submission status for {submission_id}: {submission_status}")
+
+        return submission_status
+
+    except Exception as e:
+        print(f"Error while trying to fetch the submission status: {e}")
+        return None
+
 def main():
     driver = login(TOPH_USERNAME, TOPH_PASSWORD)
 
@@ -131,6 +155,11 @@ int main() {
 }"""
         submission_id = submit(driver, problem_id, code)
         print(f"Returned Submission ID: {submission_id}")
+
+        # Fetch the submission status
+        if submission_id:
+            status = get_status(driver, submission_id)
+            print(f"Submission Status: {status}")
 
 if __name__ == "__main__":
     main()
