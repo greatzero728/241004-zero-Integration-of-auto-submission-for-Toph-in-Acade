@@ -54,4 +54,4 @@ if __name__ == "__main__":
     
     # Save problems to a file and create C++ files
     save_problems_to_file_and_create_cpp(all_problems)
-    print("Scraping complete. Check problemList.txt and cpp_problems/ directory.")
+    print("Scraping complete. Check problemList.txt.")
