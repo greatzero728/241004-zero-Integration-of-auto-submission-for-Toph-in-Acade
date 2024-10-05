@@ -52,6 +52,6 @@ if __name__ == "__main__":
         all_problems.extend(problems)
         page_num += 1
     
-    # Save problems to a file and create C++ files
+    # Save problems to a file
     save_problems_to_file(all_problems)
     print("Scraping complete. Check problemList.txt.")
