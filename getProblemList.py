@@ -25,8 +25,8 @@ def fetch_problem_links(page_num):
 
     return problems
 
-# Function to save problem names to a text file and create cpp files
-def save_problems_to_file_and_create_cpp(problems):
+# Function to save problem names to a text file
+def save_problems_to_file(problems):
     # Removing duplicates and sorting
     unique_problems = sorted(set(problems))
 
@@ -53,5 +53,5 @@ if __name__ == "__main__":
         page_num += 1
     
     # Save problems to a file and create C++ files
-    save_problems_to_file_and_create_cpp(all_problems)
+    save_problems_to_file(all_problems)
     print("Scraping complete. Check problemList.txt.")
