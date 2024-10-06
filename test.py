@@ -1,4 +1,3 @@
-# test.py
 import tkinter as tk
 from tkinter import scrolledtext
 import autoSubmitToToph
