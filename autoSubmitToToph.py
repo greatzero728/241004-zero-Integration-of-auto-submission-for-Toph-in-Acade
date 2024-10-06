@@ -103,7 +103,6 @@ def submit(problem_id, code):
             let options = dropdown.querySelectorAll('a');
             return Array.from(options).map(option => option.textContent);
         """)
-        print("options", options)
 
         # Handle the case where C++ is not found
         if not any('C++' in option for option in options):  # Check for any C++ option
